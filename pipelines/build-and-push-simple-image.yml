@@ -1,0 +1,45 @@
+---
+# Declare the resources that Concourse will continually check and use.
+resources:
+  - name: git
+    icon: github
+    type: git
+    source:
+      uri: ssh://git@172.28.124.254:222/poc/java-helloworld.git
+      branch: master
+      private_key: |
+        ((plumber-id-rsa))
+  - name: image
+    type: registry-image
+    icon: docker
+    source:
+      repository: ((docker-registry))/noops/java-helloworld
+      username: ((registry-username))
+      password: ((registry-password))
+      tag: 1.0.0
+
+jobs:
+  - name: publish-image
+    plan:
+    - get: git
+    - task: build
+      privileged: true
+      config:
+        platform: linux
+        image_resource:
+          type: registry-image
+          source:
+            repository: ((docker-registry))/noops/oci-build-task
+        inputs:
+        - name: git
+        outputs:
+        - name: image
+        params:
+          CONTEXT: git
+        run:
+          path: build
+    - put: image
+      params:
+        image: image/image.tar
+
+
