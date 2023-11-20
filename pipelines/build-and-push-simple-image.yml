@@ -30,6 +30,8 @@ jobs:
           type: registry-image
           source:
             repository: ((docker-registry))/noops/oci-build-task
+            username: ((registry-username))
+            password: ((registry-password))            
         inputs:
         - name: git
         outputs:
